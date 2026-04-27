@@ -264,12 +264,46 @@ const pageStyle = { padding: '32px', background: '#f8fafc', minHeight: '100vh', 
 const backLink = { color: '#2563eb', textDecoration: 'none', fontWeight: 600 }
 const titleStyle = { fontSize: '32px', marginTop: '24px', marginBottom: '8px' }
 const subtitleStyle = { color: '#475569', marginBottom: '24px' }
-const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }
+const gridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '20px',
+}
 const cardStyle = { background: '#fff', padding: '20px', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 6px 18px rgba(0,0,0,0.05)' }
 const scannerBoxStyle = { minHeight: '280px', border: '1px dashed #cbd5e1', borderRadius: '12px', marginBottom: '16px', padding: '8px' }
 const labelStyle = { display: 'block', fontWeight: 700, marginTop: '12px', marginBottom: '6px' }
-const inputStyle = { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '12px' }
-const primaryButton = { padding: '10px 16px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }
-const secondaryButton = { padding: '10px 16px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '4px' }
-const dangerButton = { padding: '10px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }
+const inputStyle = { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '12px', fontSize: '16px' }
+const primaryButton = {
+  width: '100%',            // 👈 full width
+  padding: '14px 16px',     // 👈 bigger height
+  background: '#2563eb',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '10px',
+  fontWeight: 800,
+  cursor: 'pointer',
+  fontSize: '16px',         // 👈 readable on mobile
+}
+const secondaryButton = {
+  width: '100%',
+  padding: '14px 16px',
+  background: '#0f172a',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '10px',
+  fontWeight: 800,
+  cursor: 'pointer',
+  fontSize: '16px',
+}
+const dangerButton = {
+  width: '100%',
+  padding: '14px 16px',
+  background: '#dc2626',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '10px',
+  fontWeight: 800,
+  cursor: 'pointer',
+  fontSize: '16px',
+}
 const resultBox = { marginTop: '16px', padding: '16px', borderRadius: '12px', background: '#ecfdf5', border: '1px solid #bbf7d0' }
