@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
+import { requireAdmin } from '../../lib/auth'
 export const dynamic = 'force-dynamic'
 
-export default async function AIRestockPage() {
+export default async function AIRestockPage() {await requireAdmin()
   const { data, error } = await supabase
     .from('order_items')
     .select(`
