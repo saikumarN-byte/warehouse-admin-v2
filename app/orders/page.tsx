@@ -25,38 +25,48 @@ export default async function OrdersPage() {
       {error && <p style={{ color: 'red' }}>{error.message}</p>}
 
       <div style={cardsWrapper}>
-        {orders?.map((order: any) => (
-          <div key={order.id} style={cardStyle}>
-            <div style={rowStyle}>
-              <span style={labelStyle}>Store</span>
-              <strong>{order.stores?.store_name ?? '-'}</strong>
-            </div>
+        {orders && orders.length > 0 ? (
+          orders.map((order: any) => (
+            <div key={order.id} style={cardStyle}>
+              <div style={topLineStyle}>
+                <div>
+                  <div style={smallLabel}>Store</div>
+                  <h2 style={storeTitle}>{order.stores?.store_name ?? '-'}</h2>
+                </div>
 
-            <div style={rowStyle}>
-              <span style={labelStyle}>Warehouse</span>
-              <span>{order.warehouses?.name ?? '-'}</span>
-            </div>
+                <span style={statusBadge}>{order.status}</span>
+              </div>
 
-            <div style={rowStyle}>
-              <span style={labelStyle}>Order Date</span>
-              <span>{order.order_date}</span>
-            </div>
+              <div style={infoGrid}>
+                <div style={infoBox}>
+                  <span style={smallLabel}>Warehouse</span>
+                  <strong>{order.warehouses?.name ?? '-'}</strong>
+                </div>
 
-            <div style={rowStyle}>
-              <span style={labelStyle}>Delivery Date</span>
-              <span>{order.delivery_date}</span>
-            </div>
+                <div style={infoBox}>
+                  <span style={smallLabel}>Order Date</span>
+                  <strong>{order.order_date}</strong>
+                </div>
 
-            <div style={rowStyle}>
-              <span style={labelStyle}>Status</span>
-              <strong>{order.status}</strong>
-            </div>
+                <div style={infoBox}>
+                  <span style={smallLabel}>Delivery Date</span>
+                  <strong>{order.delivery_date}</strong>
+                </div>
 
-            <Link href={`/orders/${order.id}`} style={buttonStyle}>
-              View / Pick Order
-            </Link>
-          </div>
-        ))}
+                <div style={infoBox}>
+                  <span style={smallLabel}>Order #</span>
+                  <strong>{order.id}</strong>
+                </div>
+              </div>
+
+              <Link href={`/orders/${order.id}`} style={buttonStyle}>
+                View / Pick Order
+              </Link>
+            </div>
+          ))
+        ) : (
+          <div style={cardStyle}>No orders found.</div>
+        )}
       </div>
     </main>
   )
@@ -68,6 +78,8 @@ const pageStyle = {
   minHeight: '100vh',
   fontFamily: 'Arial, sans-serif',
   color: '#0f172a',
+  maxWidth: '900px',
+  margin: '0 auto',
 }
 
 const backLink = {
@@ -77,8 +89,8 @@ const backLink = {
 }
 
 const titleStyle = {
-  fontSize: '34px',
-  marginTop: '24px',
+  fontSize: '40px',
+  marginTop: '28px',
   marginBottom: '20px',
 }
 
@@ -90,33 +102,68 @@ const cardsWrapper = {
 const cardStyle = {
   background: '#ffffff',
   border: '1px solid #e2e8f0',
-  borderRadius: '16px',
+  borderRadius: '18px',
   padding: '18px',
   boxShadow: '0 6px 18px rgba(0,0,0,0.05)',
+  width: '100%',
+  boxSizing: 'border-box' as const,
 }
 
-const rowStyle = {
+const topLineStyle = {
   display: 'flex',
   justifyContent: 'space-between',
-  gap: '14px',
-  padding: '10px 0',
-  borderBottom: '1px solid #eef2f7',
-  fontSize: '16px',
+  alignItems: 'flex-start',
+  gap: '12px',
+  marginBottom: '14px',
 }
 
-const labelStyle = {
+const smallLabel = {
+  display: 'block',
   color: '#64748b',
+  fontSize: '13px',
   fontWeight: 700,
+  marginBottom: '4px',
+}
+
+const storeTitle = {
+  margin: 0,
+  fontSize: '22px',
+  lineHeight: 1.25,
+}
+
+const statusBadge = {
+  background: '#fef3c7',
+  color: '#92400e',
+  padding: '7px 10px',
+  borderRadius: '999px',
+  fontWeight: 800,
+  fontSize: '13px',
+  whiteSpace: 'nowrap' as const,
+}
+
+const infoGrid = {
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '10px',
+  marginBottom: '16px',
+}
+
+const infoBox = {
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  borderRadius: '12px',
+  padding: '12px',
 }
 
 const buttonStyle = {
   display: 'block',
-  marginTop: '16px',
-  padding: '14px 16px',
+  width: '100%',
+  padding: '15px 16px',
   background: '#2563eb',
   color: '#fff',
   borderRadius: '12px',
   textDecoration: 'none',
   fontWeight: 800,
   textAlign: 'center' as const,
+  boxSizing: 'border-box' as const,
 }

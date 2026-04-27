@@ -27,6 +27,13 @@ export default function Header() {
           <Link href="/inbound-pallets" style={navLink}>Inbound Pallets</Link>
           <Link href="/reports/trends" style={navLink}>Trends</Link>
           <Link href="/ai-restock" style={navLink}>AI Restock</Link>
+
+          <button
+            onClick={() => alert('Logout coming soon')}
+            style={logoutButton}
+          >
+            Logout
+          </button>
         </nav>
       )}
     </header>
@@ -42,6 +49,7 @@ const topRowStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  gap: '12px',
 }
 
 const brandStyle = {
@@ -75,4 +83,14 @@ const navLink = {
   borderRadius: '10px',
   textDecoration: 'none',
   fontWeight: 700,
+}
+
+const logoutButton = {
+  color: '#fff',
+  background: '#dc2626',
+  padding: '13px',
+  borderRadius: '10px',
+  border: 'none',
+  fontWeight: 800,
+  fontSize: '15px',
 }
