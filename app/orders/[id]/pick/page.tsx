@@ -107,73 +107,86 @@ export default function PickOrderPage() {
     return
   }
 
-  const qtyPicking = Number(pickQty)
+  const qtyPickingNow = Number(pickQty)
   const orderedQty = Number(orderItem.quantity || 0)
-  const currentPicked = Number(orderItem.picked_quantity || 0)
-  const newPicked = currentPicked + qtyPicking
+  const currentPickedQty = Number(orderItem.picked_quantity || 0)
+  const newPickedQty = currentPickedQty + qtyPickingNow
 
-  if (newPicked > orderedQty) {
-    setMessage(`Cannot pick more than ordered qty`)
+  if (newPickedQty > orderedQty) {
+    setMessage(
+      `Cannot pick more than ordered quantity. Ordered: ${orderedQty}, already picked: ${currentPickedQty}`
+    )
     return
   }
 
-  // 1️⃣ Update picked quantity
-  const { error: pickError } = await supabase
-    .from('order_items')
-    .update({ picked_quantity: newPicked })
-    .eq('id', orderItem.id)
-
-  if (pickError) {
-    setMessage(pickError.message)
-    return
-  }
-
-  // 2️⃣ Get warehouse (Sydney)
-  const { data: warehouse } = await supabase
+  // Find Sydney warehouse
+  const { data: warehouseData, error: warehouseError } = await supabase
     .from('warehouses')
     .select('id')
     .eq('name', 'Sydney Warehouse')
     .limit(1)
 
-  const warehouseId = warehouse?.[0]?.id
+  if (warehouseError || !warehouseData || warehouseData.length === 0) {
+    setMessage('Sydney Warehouse not found')
+    return
+  }
 
-  // 3️⃣ Get inventory row
-  const { data: inventory } = await supabase
+  const warehouseId = warehouseData[0].id
+
+  // Find inventory row for scanned product
+  const { data: inventoryData, error: inventoryError } = await supabase
     .from('inventory')
-    .select('*')
+    .select('id, qty_on_hand')
     .eq('product_id', product.id)
     .eq('warehouse_id', warehouseId)
     .limit(1)
 
-  if (!inventory || inventory.length === 0) {
-    setMessage('Inventory not found')
+  if (inventoryError || !inventoryData || inventoryData.length === 0) {
+    setMessage('Inventory record not found for this product')
     return
   }
 
-  const currentStock = Number(inventory[0].qty_on_hand)
+  const inventoryRow = inventoryData[0]
+  const currentStock = Number(inventoryRow.qty_on_hand || 0)
 
-  if (qtyPicking > currentStock) {
-    setMessage(`Not enough stock. Available: ${currentStock}`)
+  if (qtyPickingNow > currentStock) {
+    setMessage(`Not enough stock. Available stock: ${currentStock}`)
     return
   }
 
-  const newStock = currentStock - qtyPicking
+  const newStockQty = currentStock - qtyPickingNow
 
-  // 4️⃣ Update inventory
-  const { error: stockError } = await supabase
+  // Update picked quantity
+  const { error: pickUpdateError } = await supabase
+    .from('order_items')
+    .update({ picked_quantity: newPickedQty })
+    .eq('id', orderItem.id)
+
+  if (pickUpdateError) {
+    setMessage(pickUpdateError.message)
+    return
+  }
+
+  // Reduce inventory
+  const { error: stockUpdateError } = await supabase
     .from('inventory')
-    .update({ qty_on_hand: newStock })
-    .eq('id', inventory[0].id)
+    .update({ qty_on_hand: newStockQty })
+    .eq('id', inventoryRow.id)
 
-  if (stockError) {
-    setMessage(stockError.message)
+  if (stockUpdateError) {
+    setMessage(stockUpdateError.message)
     return
   }
 
-  setMessage(`✅ Picked successfully. Stock left: ${newStock}`)
+  setOrderItem({
+    ...orderItem,
+    picked_quantity: newPickedQty,
+  })
 
   setPickQty('')
-  setOrderItem({ ...orderItem, picked_quantity: newPicked })
+  setMessage(
+    `✅ Pick confirmed. Picked ${newPickedQty}/${orderedQty}. Inventory left: ${newStockQty}`
+  )
 }
 
   return (
