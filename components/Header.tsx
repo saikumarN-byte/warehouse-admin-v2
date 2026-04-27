@@ -1,10 +1,42 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createClient } from '../lib/supabaseClient'
+import { useRouter } from 'next/navigation'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function loadRole() {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData.user
+
+      if (!user) {
+        setRole(null)
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      setRole(profile?.role ?? 'picker')
+    }
+
+    loadRole()
+  }, [])
+
+  async function logout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   return (
     <header style={headerStyle}>
@@ -21,17 +53,19 @@ export default function Header() {
       {open && (
         <nav style={navStyle}>
           <Link href="/" style={navLink}>Dashboard</Link>
-          <Link href="/products" style={navLink}>Products</Link>
           <Link href="/inventory" style={navLink}>Inventory</Link>
           <Link href="/orders" style={navLink}>Orders</Link>
-          <Link href="/inbound-pallets" style={navLink}>Inbound Pallets</Link>
-          <Link href="/reports/trends" style={navLink}>Trends</Link>
-          <Link href="/ai-restock" style={navLink}>AI Restock</Link>
 
-          <button
-            onClick={() => alert('Logout coming soon')}
-            style={logoutButton}
-          >
+          {role === 'admin' && (
+            <>
+              <Link href="/products" style={navLink}>Products</Link>
+              <Link href="/inbound-pallets" style={navLink}>Inbound Pallets</Link>
+              <Link href="/reports/trends" style={navLink}>Trends</Link>
+              <Link href="/ai-restock" style={navLink}>AI Restock</Link>
+            </>
+          )}
+
+          <button onClick={logout} style={logoutButton}>
             Logout
           </button>
         </nav>
