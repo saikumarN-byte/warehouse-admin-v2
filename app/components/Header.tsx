@@ -13,29 +13,25 @@ export default function Header() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '20px'
+        boxSizing: 'border-box',
       }}
     >
-      {/* LEFT: Branding */}
       <div style={{ fontWeight: 700, fontSize: '18px' }}>
         Sydney Warehouse Admin
       </div>
 
-      {/* CENTER: Navigation */}
-      <nav style={{ display: 'flex', gap: '16px' }}>
+      <nav style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
         <Link href="/" style={navLink}>Dashboard</Link>
+        <Link href="/products" style={navLink}>Products</Link>
         <Link href="/inventory" style={navLink}>Inventory</Link>
         <Link href="/orders" style={navLink}>Orders</Link>
-        <Link href="/products" style={navLink}>Products</Link>
         <Link href="/inbound-pallets" style={navLink}>Inbound</Link>
         <Link href="/reports/trends" style={navLink}>Trends</Link>
+        <Link href="/ai-restock" style={navLink}>AI Restock</Link>
       </nav>
 
-      {/* RIGHT: Logout */}
       <button
-        onClick={() => {
-          alert('Logout coming soon')
-        }}
+        onClick={() => alert('Logout coming soon')}
         style={{
           background: '#dc2626',
           color: '#fff',
@@ -43,7 +39,7 @@ export default function Header() {
           padding: '8px 12px',
           borderRadius: '6px',
           cursor: 'pointer',
-          fontWeight: 600
+          fontWeight: 600,
         }}
       >
         Logout
@@ -55,5 +51,5 @@ export default function Header() {
 const navLink = {
   color: '#e2e8f0',
   textDecoration: 'none',
-  fontWeight: 500
+  fontWeight: 500,
 }
