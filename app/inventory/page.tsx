@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
+
 export const dynamic = 'force-dynamic'
 
 export default async function InventoryPage() {
-  const { data: warehouses, error: warehouseError } = await supabase
+  const { data: warehouses } = await supabase
     .from('warehouses')
-    .select('id, name, city')
+    .select('id, name')
     .eq('name', 'Sydney Warehouse')
     .limit(1)
 
@@ -21,8 +22,6 @@ export default async function InventoryPage() {
         id,
         qty_on_hand,
         reorder_level,
-        product_id,
-        warehouse_id,
         products (
           product_name,
           sku,
@@ -37,207 +36,242 @@ export default async function InventoryPage() {
     inventoryError = result.error
   }
 
-  const lowStockCount = inventory.filter(
-    (row) => Number(row.qty_on_hand) <= Number(row.reorder_level)
-  ).length
-
   const totalStockUnits = inventory.reduce(
-    (sum, row) => sum + Number(row.qty_on_hand),
+    (sum, row) => sum + Number(row.qty_on_hand || 0),
     0
   )
 
+  const lowStockCount = inventory.filter(
+    (row) => Number(row.qty_on_hand || 0) <= Number(row.reorder_level || 0)
+  ).length
+
   return (
-    <main
-      style={{
-        padding: '32px',
-        fontFamily: 'Arial, sans-serif',
-        background: '#f8fafc',
-        minHeight: '100vh',
-        color: '#0f172a',
-      }}
-    >
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/" style={backLinkStyle}>← Back to Dashboard</Link>
+    <main style={pageStyle}>
+      <Link href="/" style={backLink}>← Back to Dashboard</Link>
+
+      <div style={headerRow}>
+        <div>
+          <h1 style={titleStyle}>Sydney Inventory</h1>
+          <p style={subtitleStyle}>Live stock levels for Sydney warehouse</p>
+        </div>
+
+        <Link href="/stock-in" style={stockButton}>
+          Stock In QR
+        </Link>
       </div>
-
-      <h1
-        style={{
-          fontSize: '32px',
-          fontWeight: 'bold',
-          marginBottom: '8px',
-          color: '#0f172a',
-        }}
-      >
-        Sydney Inventory
-      </h1>
-
-      <p
-        style={{
-          color: '#475569',
-          marginBottom: '24px',
-          fontSize: '15px',
-        }}
-      >
-        Live stock levels for Sydney warehouse
-      </p>
-      <div style={{ marginBottom: '20px' }}>
-  <Link
-    href="/stock-in"
-    style={{
-      padding: '10px 16px',
-      background: '#16a34a',
-      color: '#fff',
-      borderRadius: '8px',
-      textDecoration: 'none',
-      fontWeight: 700,
-      display: 'inline-block',
-    }}
-  >
-    Stock In QR
-  </Link>
-</div>
-
-      {warehouseError && (
-        <p style={{ color: 'red', marginBottom: '16px' }}>
-          Warehouse error: {warehouseError.message}
-        </p>
-      )}
 
       {inventoryError && (
-        <p style={{ color: 'red', marginBottom: '16px' }}>
-          Inventory error: {inventoryError.message}
-        </p>
+        <p style={{ color: 'red' }}>{inventoryError.message}</p>
       )}
 
-      {!warehouse && !warehouseError && (
-        <p style={{ color: 'red', marginBottom: '16px' }}>
-          Sydney Warehouse was not found in the database.
-        </p>
-      )}
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '24px',
-        }}
-      >
-        <div style={cardStyle}>
-          <div style={labelStyle}>Products in Inventory</div>
-          <div style={valueStyle}>{inventory.length}</div>
+      <section style={kpiGrid}>
+        <div style={kpiCard}>
+          <span style={kpiLabel}>Products</span>
+          <strong style={kpiValue}>{inventory.length}</strong>
         </div>
 
-        <div style={cardStyle}>
-          <div style={labelStyle}>Total Stock Units</div>
-          <div style={valueStyle}>{totalStockUnits}</div>
+        <div style={kpiCard}>
+          <span style={kpiLabel}>Total Units</span>
+          <strong style={kpiValue}>{totalStockUnits}</strong>
         </div>
 
-        <div style={cardStyle}>
-          <div style={labelStyle}>Low Stock Items</div>
-          <div style={valueStyle}>{lowStockCount}</div>
+        <div style={kpiCard}>
+          <span style={kpiLabel}>Low Stock</span>
+          <strong style={kpiValue}>{lowStockCount}</strong>
         </div>
-      </div>
+      </section>
 
-      <div
-        style={{
-          border: '1px solid #e2e8f0',
-          borderRadius: '14px',
-          overflow: 'hidden',
-          background: '#ffffff',
-          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.06)',
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-            background: '#f1f5f9',
-            borderBottom: '1px solid #e2e8f0',
-            fontWeight: 700,
-            color: '#0f172a',
-          }}
-        >
-          <div style={th}>Product</div>
-          <div style={th}>SKU</div>
-          <div style={th}>Qty On Hand</div>
-          <div style={th}>Reorder Level</div>
-          <div style={th}>Status</div>
-        </div>
-
+      <section style={cardsWrapper}>
         {inventory.length > 0 ? (
-          inventory.map((row) => {
-            const isLowStock =
-              Number(row.qty_on_hand) <= Number(row.reorder_level)
+          inventory.map((row: any) => {
+            const qty = Number(row.qty_on_hand || 0)
+            const reorder = Number(row.reorder_level || 0)
+            const isLow = qty <= reorder
 
             return (
-              <div
-                key={row.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-                  borderBottom: '1px solid #eef2f7',
-                  color: '#1e293b',
-                  background: isLowStock ? '#fff7ed' : '#ffffff',
-                }}
-              >
-                <div style={td}>{row.products?.product_name ?? '-'}</div>
-                <div style={td}>{row.products?.sku ?? '-'}</div>
-                <div style={td}>{row.qty_on_hand ?? 0}</div>
-                <div style={td}>{row.reorder_level ?? 0}</div>
-                <div
-                  style={{
-                    ...td,
-                    fontWeight: 600,
-                    color: isLowStock ? '#c2410c' : '#15803d',
-                  }}
-                >
-                  {isLowStock ? 'Low Stock' : 'Healthy'}
+              <div key={row.id} style={cardStyle}>
+                <div style={cardTop}>
+                  <div>
+                    <div style={smallLabel}>Product</div>
+                    <h2 style={productTitle}>
+                      {row.products?.product_name ?? '-'}
+                    </h2>
+                  </div>
+
+                  <span
+                    style={{
+                      ...statusBadge,
+                      background: isLow ? '#fee2e2' : '#dcfce7',
+                      color: isLow ? '#991b1b' : '#166534',
+                    }}
+                  >
+                    {isLow ? 'Low Stock' : 'Healthy'}
+                  </span>
+                </div>
+
+                <div style={infoGrid}>
+                  <div style={infoBox}>
+                    <span style={smallLabel}>SKU</span>
+                    <strong>{row.products?.sku ?? '-'}</strong>
+                  </div>
+
+                  <div style={infoBox}>
+                    <span style={smallLabel}>Category</span>
+                    <strong>{row.products?.category ?? '-'}</strong>
+                  </div>
+
+                  <div style={infoBox}>
+                    <span style={smallLabel}>Qty On Hand</span>
+                    <strong style={{ fontSize: '24px' }}>{qty}</strong>
+                  </div>
+
+                  <div style={infoBox}>
+                    <span style={smallLabel}>Reorder Level</span>
+                    <strong>{reorder}</strong>
+                  </div>
                 </div>
               </div>
             )
           })
         ) : (
-          <div style={{ padding: '16px', color: '#475569' }}>
-            No Sydney inventory found.
-          </div>
+          <div style={cardStyle}>No Sydney inventory found.</div>
         )}
-      </div>
+      </section>
     </main>
   )
 }
 
-const backLinkStyle = {
+const pageStyle = {
+  padding: '20px',
+  background: '#f8fafc',
+  minHeight: '100vh',
+  fontFamily: 'Arial, sans-serif',
+  color: '#0f172a',
+  maxWidth: '900px',
+  margin: '0 auto',
+}
+
+const backLink = {
   color: '#2563eb',
   textDecoration: 'none',
-  fontWeight: 500,
+  fontWeight: 700,
 }
 
-const cardStyle = {
+const headerRow = {
+  display: 'grid',
+  gap: '14px',
+  marginTop: '24px',
+  marginBottom: '20px',
+}
+
+const titleStyle = {
+  fontSize: '36px',
+  margin: 0,
+  lineHeight: 1.15,
+}
+
+const subtitleStyle = {
+  color: '#475569',
+  marginTop: '8px',
+  marginBottom: 0,
+  fontSize: '16px',
+}
+
+const stockButton = {
+  display: 'block',
+  width: '100%',
+  boxSizing: 'border-box' as const,
+  padding: '15px 16px',
+  background: '#16a34a',
+  color: '#fff',
+  borderRadius: '12px',
+  textDecoration: 'none',
+  fontWeight: 800,
+  textAlign: 'center' as const,
+}
+
+const kpiGrid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '10px',
+  marginBottom: '20px',
+}
+
+const kpiCard = {
+  background: '#ffffff',
   border: '1px solid #e2e8f0',
   borderRadius: '14px',
-  padding: '18px',
-  background: '#ffffff',
-  boxShadow: '0 4px 14px rgba(15, 23, 42, 0.06)',
+  padding: '14px',
+  boxShadow: '0 6px 18px rgba(0,0,0,0.04)',
 }
 
-const labelStyle = {
+const kpiLabel = {
+  display: 'block',
   color: '#64748b',
-  fontSize: '13px',
+  fontSize: '12px',
+  fontWeight: 700,
   marginBottom: '8px',
 }
 
-const valueStyle = {
-  fontSize: '28px',
-  fontWeight: 'bold' as const,
+const kpiValue = {
+  fontSize: '24px',
   color: '#0f172a',
 }
 
-const th = {
-  padding: '14px 12px',
-  textAlign: 'left' as const,
+const cardsWrapper = {
+  display: 'grid',
+  gap: '16px',
 }
 
-const td = {
-  padding: '14px 12px',
+const cardStyle = {
+  background: '#ffffff',
+  border: '1px solid #e2e8f0',
+  borderRadius: '18px',
+  padding: '18px',
+  boxShadow: '0 6px 18px rgba(0,0,0,0.05)',
+  width: '100%',
+  boxSizing: 'border-box' as const,
+}
+
+const cardTop = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  gap: '12px',
+  alignItems: 'flex-start',
+  marginBottom: '14px',
+}
+
+const smallLabel = {
+  display: 'block',
+  color: '#64748b',
+  fontSize: '13px',
+  fontWeight: 700,
+  marginBottom: '4px',
+}
+
+const productTitle = {
+  margin: 0,
+  fontSize: '22px',
+  lineHeight: 1.25,
+}
+
+const statusBadge = {
+  padding: '7px 10px',
+  borderRadius: '999px',
+  fontWeight: 800,
+  fontSize: '13px',
+  whiteSpace: 'nowrap' as const,
+}
+
+const infoGrid = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '10px',
+}
+
+const infoBox = {
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  borderRadius: '12px',
+  padding: '12px',
 }
